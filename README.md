@@ -112,6 +112,21 @@ npm start
 
 El comando `build` valida TypeScript y genera la interfaz en `dist/`. Después, `npm start` inicia Express, que sirve tanto la API como los archivos compilados. Configura `DATABASE_URL` y, si hace falta, `PORT` en el entorno del servidor.
 
+## Ejecutar con Docker
+
+La imagen contiene la interfaz compilada y la API Express. PostgreSQL debe seguir siendo accesible desde el contenedor (por ejemplo, la instancia de Supabase configurada en `DATABASE_URL`).
+
+1. Verifica que el archivo `.env` de la raíz tenga `DATABASE_URL` configurada. Docker Compose pasa esa variable al contenedor; el archivo `.env` no se copia dentro de la imagen.
+2. Desde la raíz del proyecto, construye la imagen e inicia el servicio:
+
+   ```bash
+   docker compose up --build
+   ```
+
+3. Abre `http://localhost:3001`. Para detener el servicio, usa `Ctrl+C`; si lo iniciaste en segundo plano, ejecuta `docker compose down`.
+
+La API y la interfaz se sirven desde el mismo puerto (`3001`), por lo que las solicitudes `/api` funcionan sin configurar un proxy adicional.
+
 ## Comandos disponibles
 
 - `npm run dev`: inicia API e interfaz en modo desarrollo.
