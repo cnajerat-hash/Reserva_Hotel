@@ -112,11 +112,65 @@ npm start
 
 El comando `build` valida TypeScript y genera la interfaz en `dist/`. Después, `npm start` inicia Express, que sirve tanto la API como los archivos compilados. Configura `DATABASE_URL` y, si hace falta, `PORT` en el entorno del servidor.
 
+## Ejecutar con Docker
+
+La imagen contiene la interfaz compilada y la API Express. PostgreSQL debe seguir siendo accesible desde el contenedor (por ejemplo, la instancia de Supabase configurada en `DATABASE_URL`).
+
+1. Verifica que el archivo `.env` de la raíz tenga `DATABASE_URL` configurada. Docker Compose pasa esa variable al contenedor; el archivo `.env` no se copia dentro de la imagen.
+2. Desde la raíz del proyecto, construye la imagen e inicia el servicio:
+
+   ```bash
+   docker compose up --build
+   ```
+
+3. Abre `http://localhost:3001`. Para detener el servicio, usa `Ctrl+C`; si lo iniciaste en segundo plano, ejecuta `docker compose down`.
+
+La API y la interfaz se sirven desde el mismo puerto (`3001`), por lo que las solicitudes `/api` funcionan sin configurar un proxy adicional.
+
 ## Comandos disponibles
 
 - `npm run dev`: inicia API e interfaz en modo desarrollo.
 - `npm run dev:api`: inicia solo la API con recarga automática.
 - `npm run dev:web`: inicia solo Vite.
 - `npm run build`: valida y compila la aplicación.
+- `npm test`: ejecuta las pruebas automatizadas.
 - `npm start`: inicia el servidor Express.
 - `npm run preview`: previsualiza la compilación de Vite; no inicia la API.
+
+## Pruebas automatizadas
+
+Las pruebas de `test/HabitacionServ.test.ts` validan las funciones de `src/aplicacion/HabitacionServ.ts` usando Vitest. Los repositorios y las reglas de negocio se sustituyen por objetos simulados para comprobar cada comportamiento sin depender de PostgreSQL.
+
+Ejecuta toda la suite con:
+
+```bash
+npm test
+```
+
+La suite contiene 14 pruebas:
+
+### Consulta de habitaciones y reservas
+
+- **Lista habitaciones con el filtro solicitado:** verifica que `listarHabitaciones` entregue las habitaciones devueltas por el repositorio y reenvíe el filtro `libres`.
+- **Lista todas las habitaciones por defecto:** comprueba que, al no indicar un filtro, se consulte el valor `todas`.
+- **Lista las reservas:** verifica que `listarReservas` devuelva correctamente las reservas obtenidas del repositorio.
+
+### Actualización de estado
+
+- **Actualiza el estado después de normalizarlo:** comprueba que elimina espacios alrededor del estado y envía el valor normalizado al repositorio.
+- **Rechaza identificadores inválidos al actualizar:** verifica que un identificador cero o no entero genere `ErrorValidacionHabitacion` y no se consulte al repositorio.
+- **Rechaza estados vacíos o demasiado largos:** confirma que el estado debe tener entre 1 y 50 caracteres.
+
+### Creación de reservas
+
+- **Crea una reserva válida:** verifica la conversión del identificador, la normalización del huésped y las fechas, además de comprobar que se persista la reserva con los datos corregidos.
+- **Rechaza huéspedes vacíos:** confirma que un nombre compuesto solo por espacios genera un `ErrorReserva` con estado HTTP 400.
+- **Convierte errores de negocio en ErrorReserva con estado 400:** verifica que los errores de validación de dominio se traduzcan a errores de aplicación con el mensaje y estado adecuados.
+- **Rechaza fechas reales inválidas:** comprueba que fechas con formato incorrecto o calendario inexistente, como `2026-02-30`, sean rechazadas.
+- **Rechaza una salida que no es posterior a la entrada:** verifica que la fecha de salida no pueda ser igual ni anterior a la fecha de entrada.
+
+### Respuestas del repositorio
+
+- **Maneja habitación no encontrada:** confirma que una respuesta `no-encontrada` produce un `ErrorReserva` con estado 404.
+- **Maneja habitación no libre:** verifica que una respuesta `no-libre` produzca un `ErrorReserva` con estado 409.
+- **Maneja fechas ocupadas:** confirma que una respuesta `fechas-ocupadas` produzca un `ErrorReserva` con estado 409.
