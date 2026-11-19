@@ -103,6 +103,17 @@ La conexión se lee de `DATABASE_URL` en el servidor. No se debe colocar la cade
 
 4. Abre `/habitaciones` para ver la disponibilidad y `/reservas` para consultar las reservas.
 
+### Acceso desde otros equipos de la red
+
+1. Inicia la aplicación con `npm run dev`.
+2. Obtén la dirección IPv4 del equipo servidor con `ipconfig`.
+3. Desde otro equipo abre `http://DIRECCION_IPV4_DEL_SERVIDOR:5173`.
+
+Los equipos deben estar en la misma red. Autoriza Node.js/Vite en el Firewall de
+Windows para redes privadas y permite el puerto `5173`. También puedes abrir
+directamente `http://DIRECCION_IPV4_DEL_SERVIDOR:3001` después de ejecutar
+`npm run build` y `npm start`.
+
 ## Compilación y ejecución de producción
 
 ```bash
