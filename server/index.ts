@@ -7,7 +7,7 @@ import pool from '../src/presencia/db.ts'
 const app = express()
 const port = Number(process.env.PORT) || 3001
 
-//app.use(express.json({ limit: '16kb' }))
+app.use(express.json({ limit: '16kb' }))
 
 app.get('/api/habitaciones', async (request, response, next) => {
     try {
