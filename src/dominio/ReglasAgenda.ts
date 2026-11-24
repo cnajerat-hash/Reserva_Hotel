@@ -60,4 +60,63 @@ function validarDisponibilidad(
     }
 }
 
-export { ErrorDeNegocio, validarDatosReserva, validarDisponibilidad }
+function obtenerFechasReserva(
+    fecha_inicio: string | Date,
+    fecha_fin: string | Date | null,
+    fechaActual: string | Date,
+) {
+    const fechaInicio = convertirFecha(fecha_inicio)
+    const fechaFin = fecha_fin === null
+        ? Number.POSITIVE_INFINITY
+        : convertirFecha(fecha_fin)
+    const hoy = fechaActual instanceof Date
+        ? Date.UTC(fechaActual.getFullYear(), fechaActual.getMonth(), fechaActual.getDate())
+        : convertirFecha(fechaActual)
+
+    if (!Number.isFinite(fechaInicio)
+        || (!Number.isFinite(fechaFin) && fecha_fin !== null)
+        || !Number.isFinite(hoy)
+        || (fecha_fin !== null && fechaFin <= fechaInicio)) {
+        throw new ErrorDeNegocio('FECHAS_INVALIDAS', 'Las fechas de la reserva deben ser válidas.')
+    }
+
+    return { fechaInicio, fechaFin, hoy }
+}
+
+function validarNoEliminarReservaEnCurso(
+    fecha_inicio: string | Date,
+    fecha_fin: string | Date | null,
+    fechaActual: string | Date = new Date(),
+) {
+    const { fechaInicio, fechaFin, hoy } = obtenerFechasReserva(fecha_inicio, fecha_fin, fechaActual)
+
+    if (hoy >= fechaInicio && hoy <= fechaFin) {
+        throw new ErrorDeNegocio(
+            'RESERVA_EN_CURSO',
+            'No se puede eliminar una reserva que ya está en curso.',
+        )
+    }
+}
+
+function validarNoEliminarReservaFinalizada(
+    fecha_inicio: string | Date,
+    fecha_fin: string | Date | null,
+    fechaActual: string | Date = new Date(),
+) {
+    const { fechaFin, hoy } = obtenerFechasReserva(fecha_inicio, fecha_fin, fechaActual)
+
+    if (hoy > fechaFin) {
+        throw new ErrorDeNegocio(
+            'RESERVA_FINALIZADA',
+            'No se puede eliminar una reserva finalizada.',
+        )
+    }
+}
+
+export {
+    ErrorDeNegocio,
+    validarDatosReserva,
+    validarDisponibilidad,
+    validarNoEliminarReservaEnCurso,
+    validarNoEliminarReservaFinalizada,
+}

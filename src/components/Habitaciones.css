@@ -186,6 +186,14 @@
   font-weight: 600;
 }
 
+.reservation-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid #eeebf2;
+}
+
 .room-footer {
   display: flex;
   align-items: flex-end;
@@ -385,6 +393,7 @@
 
 .modal-actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: 10px;
   padding-top: 5px;

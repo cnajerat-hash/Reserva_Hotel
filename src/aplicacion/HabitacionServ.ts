@@ -1,15 +1,8 @@
 import { cambiarEstadoHabitacion, crearReserva as persistirReserva, getHabitaciones, getReservas } from '../presencia/HabitacionRepositiry.ts'
 import { ErrorDeNegocio, validarDatosReserva } from '../dominio/ReglasAgenda.ts'
+import { ErrorReserva } from './Errores.ts'
 
 class ErrorValidacionHabitacion extends Error {}
-class ErrorReserva extends Error {
-    readonly status: number
-
-    constructor(message: string, status: number) {
-        super(message)
-        this.status = status
-    }
-}
 
 type FiltroHabitaciones = 'libres' | 'no-libres' | 'todas'
 
@@ -53,7 +46,7 @@ function esFechaValida(fecha: string) {
 
 async function reservarHabitacion(datos: DatosReservaEntrada) {
     const id = Number(datos.id_habitacion)
-    if (typeof datos.huesped !== 'string' || !datos.huesped.trim() || datos.huesped.trim().length > 150) {
+    if (typeof datos.huesped !== 'string' || !datos.huesped.trim()  || datos.huesped.trim().length > 150) {
         throw new ErrorReserva('Escribe el nombre del huésped (máximo 150 caracteres).', 400)
     }
 

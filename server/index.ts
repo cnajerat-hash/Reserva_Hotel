@@ -1,7 +1,9 @@
 import express from 'express'
 import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { actualizarEstadoHabitacion, ErrorReserva, ErrorValidacionHabitacion, listarHabitaciones, listarReservas, reservarHabitacion } from '../src/aplicacion/HabitacionServ.ts'
+import { actualizarEstadoHabitacion, ErrorValidacionHabitacion, listarHabitaciones, listarReservas, reservarHabitacion } from '../src/aplicacion/HabitacionServ.ts'
+import { editarFechaEntrada, editarFechaSalida, eliminarReserva } from '../src/aplicacion/ReservasServ.ts'
+import { ErrorReserva } from '../src/aplicacion/Errores.ts'
 import pool from '../src/presencia/db.ts'
 
 const app = express()
@@ -36,6 +38,31 @@ app.post('/api/reservas', async (request, response, next) => {
     try {
         const reserva = await reservarHabitacion(request.body ?? {})
         response.status(201).json(reserva)
+    } catch (error) {
+        next(error)
+    }
+})
+
+app.patch('/api/reservas/:id/fecha-entrada', async (request, response, next) => {
+    try {
+        response.json(await editarFechaEntrada(request.params.id, request.body?.fecha))
+    } catch (error) {
+        next(error)
+    }
+})
+
+app.patch('/api/reservas/:id/fecha-salida', async (request, response, next) => {
+    try {
+        response.json(await editarFechaSalida(request.params.id, request.body?.fecha))
+    } catch (error) {
+        next(error)
+    }
+})
+
+app.delete('/api/reservas/:id', async (request, response, next) => {
+    try {
+        await eliminarReserva(request.params.id)
+        response.status(204).end()
     } catch (error) {
         next(error)
     }
